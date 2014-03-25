@@ -1,0 +1,28 @@
+<?php return array(
+	'options' => array(
+		'tmpFolder' => 'store/zip/here',
+		'logs' => 'path/to/logs',
+		'ftp' => array(
+			'server' => '123.456.789',
+			'user' => 'user',
+			'password' => 'password'
+			'destination' => 'path/to/storage/dir'
+		)
+	),
+	'backups' => array(
+		'foldername' => array(
+			'files' => array(
+				'path' => '/path/to/files',
+				'exclude' => array(
+					'exclude/file/1', 
+					'exclude/file/2'
+				)
+			),
+			'database' => array(
+				'name' => 'database_name',
+				'user' => 'user',
+				'password' => 'password'
+			)
+		)
+	)
+);
