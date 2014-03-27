@@ -1,6 +1,6 @@
 <?php
 
-const CONFIG_FILE = '/home/jorge/documents/backup/config-test.php';
+const CONFIG_FILE = '/path/to/config';
 
 function test($subFolder, $max)
 {	
@@ -32,7 +32,7 @@ function test($subFolder, $max)
 	
 	if ($subFolder === null || $max === null) {
 		alert(['Usage:', 
-			"php {$argv[0]} subfolder max",
+			"php site-backup.php subfolder max",
 			'Arguments:',
 			' - subfolder: the backup subfolder (ie the cron period)',
 			' - max:       the maximum amount of file in the subfolder'
@@ -46,7 +46,7 @@ function test($subFolder, $max)
 function run($subfolder, $max)
 {
 	$config    = include CONFIG_FILE;
-	$backups   = $config['backups'];
+	$backups   = $config['sites'];
 	$tmpFolder = $config['options']['tmpFolder'];
 	
 	foreach ($backups as $name => $data) {

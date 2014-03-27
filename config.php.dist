@@ -9,7 +9,7 @@
 			'destination' => 'path/to/storage/dir'
 		)
 	),
-	'backups' => array(
+	'sites' => array(
 		'foldername' => array(
 			'files' => array(
 				'path' => '/path/to/files',
@@ -22,7 +22,8 @@
 				'name' => 'database_name',
 				'user' => 'user',
 				'password' => 'password'
-			)
+			),
+			'owner' => 'siteowner'
 		)
 	)
 );

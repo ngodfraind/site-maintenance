@@ -1,0 +1,4 @@
+#!/bin/bash
+
+chown -R root:$1 $2
+chmod -R 0755 $2/path/to/sthg
