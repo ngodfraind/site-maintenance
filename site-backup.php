@@ -125,7 +125,7 @@ function dumpDatabase($user, $password, $database, $tmpFolder, $name, $date)
     $passwordCommand = '';
     
     if ($password) {
-		$passwordCommand = "-p{$password}";
+		$passwordCommand = "--password='{$password}'";
 	}
 	
     $command = 
