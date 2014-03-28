@@ -109,7 +109,7 @@ function backupFiles($path, array $exclude, $name, $tmpFolder, $date)
     
     if ($returnCode !== 0) {
         // remove bup dir
-        write("zip exited with code {$returnCode}");
+        logError("Zip exited with code {$returnCode} for {$name}");
     }
 
     write("Files backup written in {$zipName}");
