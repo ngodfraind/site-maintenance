@@ -192,6 +192,7 @@ function store($tmpFolder, $login, $password, $server, $name, $date, $destinatio
 		} else {
 			//checks if the subfolders still exists.
 			$listFiles = ftp_nlist($con, $destinationFolder);
+			$found = false;
 			
 			foreach ($listFiles as $$el) {
 				if ($el === $subfolder) {
