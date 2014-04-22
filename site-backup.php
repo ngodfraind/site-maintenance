@@ -1,6 +1,6 @@
 <?php
 
-const CONFIG_FILE = '/path/to/config';
+const CONFIG_FILE = '/home/common/scripts/config.php';
 
 function test($subFolder, $max)
 {	
@@ -109,7 +109,7 @@ function backupFiles($path, array $exclude, $name, $tmpFolder, $date)
     
     if ($returnCode !== 0) {
         // remove bup dir
-        write("zip exited with code {$returnCode}");
+        logError("zip exited with code {$returnCode} for {$name}");
     }
 
     write("Files backup written in {$zipName}");
@@ -190,11 +190,12 @@ function store($tmpFolder, $login, $password, $server, $name, $date, $destinatio
 			}
 			
 		} else {
+            $found = false;
 			//checks if the subfolders still exists.
 			$listFiles = ftp_nlist($con, $destinationFolder);
-			
-			foreach ($listFiles as $$el) {
-				if ($el === $subfolder) {
+
+			foreach ($listFiles as $el) {
+				if ($el === "{$destinationFolder}{$ds}{$subfolder}") {
 					$found = true;
 				}
 			}

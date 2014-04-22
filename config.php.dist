@@ -23,7 +23,7 @@
 				'user' => 'user',
 				'password' => 'password'
 			),
-			'owner' => 'siteowner'
+			'owner' => 'me'
 		)
 	)
 );
