@@ -20,7 +20,7 @@ class FTPConnection implements FTPInterface
     public function __construct($ip, $login, $password) {
         
         if (!extension_loaded('ftp')) {
-            throw new \Exception('The ftp php extension is missing');
+            throw new \Exception('The ftp php extension is missing.');
         };
         
         $this->con      = null;
@@ -30,7 +30,6 @@ class FTPConnection implements FTPInterface
     }
     
     public function connect() {
-        //@todo check if ftp extension is loaded
         
         $con = ftp_connect($this->ip);
         
@@ -83,7 +82,7 @@ class SFTPConnection implements FTPInterface
     public function __construct($ip, $login, $pubkey, $privkey, $password) {
         
         if (!extension_loaded('ssh2')) {
-            throw new \Exception('The ssh2 php extension is missing');
+            throw new \Exception('The ssh2 php extension is missing.');
         };
         
         $this->session  = null;

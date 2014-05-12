@@ -1,7 +1,8 @@
 <?php return array(
 	'options' => array(
 		'tmpFolder' => 'store/zip/here',
-		'logs' => 'path/to/logs',
+		'error-logs' => '/path/to/error-logs.txt',
+        'success-logs' => '/path/to/success-logs.txt',
         'conn_type' => 'ftp' //ftp or sftp
         'server' => array(
             'host' => '123.456.789',
@@ -15,7 +16,7 @@
             'user' => 'nicolas',
             'password' => 'password',
             'pubkey' => '/home/jorge/.ssh/id_rsa_bkp_server.pub',
-            'privkey' => '/home/jorge/.ssh/id_rsa_bkp_server'
+            'privkey' => '/home/jorge/.ssh/id_rsa_bkp_server.pem'
         )
 	),
 	'sites' => array(

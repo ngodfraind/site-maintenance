@@ -26,12 +26,18 @@ function test($subFolder, $max)
 		throw new Exception($msg);
 	}
 	
-	if (!is_writable($config['options']['logs'])) {
-		$msg = "The log file is not writable.\n";
+	if (!is_writable($config['options']['error-logs'])) {
+		$msg = "The error log file is not writable.\n";
 		logError($msg);
 		throw new Exception($msg);
 	}
 	
+    if (!is_writable($config['options']['success-logs'])) {
+		$msg = "The success log file is not writable.\n";
+		logError($msg);
+		throw new Exception($msg);
+	}
+    
 	if ($subFolder === null || $max === null) {
 		alert(['Usage:', 
 			"php site-backup.php subfolder max",
@@ -231,7 +237,9 @@ function store($tmpFolder, $contype, $ftpdata, $name, $date, $destination, $subf
 		$con->close();
 	}
     
-    write("ftp backup written in {$destination}{$ds}{$name}");
+    $msg = "ftp backup written in {$destination}{$ds}{$name}";
+    write($msg);
+    logSuccess($msg);
 }
 
 function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $max)
@@ -295,10 +303,18 @@ function commandExists($cmd) {
     return (empty($returnVal) ? false : true);
 }
 
+function logSuccess($log)
+{
+    $config = include CONFIG_FILE;
+	$logFile = $config['options']['success-logs'];
+	$logLine = date("m-d-y h:i:s") . ': ' . $log . PHP_EOL; 
+	file_put_contents($logFile, $logLine, FILE_APPEND);
+}
+
 function logError($log)
 {
 	$config = include CONFIG_FILE;
-	$logFile = $config['options']['logs'];
+	$logFile = $config['options']['error-logs'];
 	$logLine = date("m-d-y h:i:s") . ': ' . $log . PHP_EOL; 
 	file_put_contents($logFile, $logLine, FILE_APPEND);
 }
