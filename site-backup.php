@@ -110,6 +110,8 @@ function run($subfolder, $max)
 			$max
 		);
         
+        var_dump($error);
+        
         if (!$error) {
             $errors[] = "{$name} backup failed";
         }
@@ -248,7 +250,7 @@ function store($tmpFolder, $contype, $ftpdata, $name, $date, $destination, $subf
 		$con->close();
 	}
     
-    return true;
+    return $error;
 }
 
 function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $max)
