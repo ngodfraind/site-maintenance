@@ -1,6 +1,8 @@
 <?php
 
-const CONFIG_FILE = '/home/common/scripts/config.php';
+const CONFIG_FILE = '/home/jorge/documents/backup/site-maintenance/config.php';
+
+require_once __DIR__ . '/ftp_connection.php';
 
 function test($subFolder, $max)
 {	
@@ -39,6 +41,7 @@ function test($subFolder, $max)
         ]);
         $msg = "Arguments missing";
         logError($msg);
+        
 		throw new Exception($msg);
 	}
 }
@@ -69,14 +72,33 @@ function run($subfolder, $max)
 			$date
 		);
 		
+        $contype = $config['options']['conn_type'];
+        
+        if ($contype === 'ftp') {
+            $ftpdata = array(
+                'host'     => $config['options']['server']['host'],
+                'login'    => $config['options']['ftp']['user'],
+                'password' => $config['options']['ftp']['password']
+            );
+        } elseif ($contype === 'sftp') {
+            $ftpdata = array(
+                'host'     => $config['options']['server']['host'],
+                'login'    => $config['options']['sftp']['user'],
+                'password' => $config['options']['sftp']['password'],
+                'pubkey'   => $config['options']['sftp']['pubkey'],
+                'privkey'  => $config['options']['sftp']['privkey']
+            );
+        } else {
+            throw new \Exception($contype . ' is not supported');
+        }
+        
 		store(
 			$tmpFolder,
-			$config['options']['ftp']['user'],
-			$config['options']['ftp']['password'],
-			$config['options']['ftp']['server'],
+            $contype,
+            $ftpdata,
 			$name,
 			$date,
-			$config['options']['ftp']['destination'],
+			$config['options']['server']['destination'],
 			$subfolder,
 			$max
 		);
@@ -104,7 +126,7 @@ function backupFiles($path, array $exclude, $name, $tmpFolder, $date)
 		}
 	}
 	
-	$command = "zip -rq {$zipName} {$rootDir} {$excludeCommand}";
+	$command = "zip -r {$zipName} {$rootDir} {$excludeCommand}";
     system($command, $returnCode);
     
     if ($returnCode !== 0) {
@@ -146,25 +168,20 @@ function dumpDatabase($user, $password, $database, $tmpFolder, $name, $date)
 }
 
 //ftp storage on distant server
-function store($tmpFolder, $login, $password, $server, $name, $date, $destination, $subfolder, $max)
+function store($tmpFolder, $contype, $ftpdata, $name, $date, $destination, $subfolder, $max)
 {
 	$ds = DIRECTORY_SEPARATOR;
-	$con = ftp_connect($server);
+	$con = FTPFactory::getConnection($contype, $ftpdata);
 	$filename = $name . '@' . $date;
+	$isConnected = $con->connect();
 	
-	if (false === $con) {
-		logError("unable to connect to the ftp server while uploading {$name}");
-	}
-	
-	$loggedIn = ftp_login($con,  $login,  $password);
-	
-	if (false === $loggedIn) {
+	if (false === $isConnected) {
 		logError("Unable to log in to the ftp server while uploading {$name}.");
 	} else {
 		write('Saving data at the ftp server...');
 			
 		//check if the backup folder already exists
-		$listFiles = ftp_nlist($con, $destination);
+		$listFiles = $con->nlist($destination);
 		$found = false;
 		
 		foreach ($listFiles as $el) {
@@ -177,13 +194,13 @@ function store($tmpFolder, $login, $password, $server, $name, $date, $destinatio
 		
 		//create the backup folder
 		if (!$found) {
-			$success = ftp_mkdir($con, $destinationFolder);
+			$success = $con->mkdir($destinationFolder);
 			
 			if (!$success) {
 				logError("The folder {$destinationFolder} was not created on the remote server."); 
 			}
 			
-			$success = ftp_mkdir($con, "{$destinationFolder}{$ds}{$subfolder}");
+			$success = $con->mkdir("{$destinationFolder}{$ds}{$subfolder}");
 			
 			if (!$success) {
 				logError("The folder {$destinationFolder}{$ds}{$subfolder} was not created on the remote server."); 
@@ -192,7 +209,7 @@ function store($tmpFolder, $login, $password, $server, $name, $date, $destinatio
 		} else {
             $found = false;
 			//checks if the subfolders still exists.
-			$listFiles = ftp_nlist($con, $destinationFolder);
+			$listFiles = $con->nlist($destinationFolder);
 
 			foreach ($listFiles as $el) {
 				if ($el === "{$destinationFolder}{$ds}{$subfolder}") {
@@ -202,7 +219,7 @@ function store($tmpFolder, $login, $password, $server, $name, $date, $destinatio
 			
 			if (!$found) {
 				logError("The folder {$subfolder} has been removed. Trying to create it again..."); 
-				$success = ftp_mkdir($con, "{$destinationFolder}{$ds}{$subfolder}");
+				$success = $con->mkdir("{$destinationFolder}{$ds}{$subfolder}");
 				
 				if (!$success) {
 					logError("The folder {$destinationFolder}{$ds}{$subfolder} was not created on the remote server."); 
@@ -211,7 +228,7 @@ function store($tmpFolder, $login, $password, $server, $name, $date, $destinatio
 		}
 		
 		upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $max);
-		ftp_close($con);
+		$con->close();
 	}
     
     write("ftp backup written in {$destination}{$ds}{$name}");
@@ -221,11 +238,9 @@ function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $ma
 {
 	$ds = DIRECTORY_SEPARATOR;
 	
-	$success = ftp_put(
-		$con, 
+	$success = $con->put(
 		"{$destinationFolder}{$ds}{$subfolder}{$ds}{$filename}.zip", 
-		"{$tmpFolder}{$ds}{$filename}.zip",
-		FTP_BINARY
+		"{$tmpFolder}{$ds}{$filename}.zip"
 	);
 	
 	if (!$success) {
@@ -234,11 +249,9 @@ function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $ma
 		unlink("{$tmpFolder}{$ds}{$filename}.zip");
 	}
 	
-	$success = ftp_put(
-		$con, 
+	$success = $con->put(
 		"{$destinationFolder}{$ds}{$subfolder}{$ds}{$filename}.sql.zip", 
-		"{$tmpFolder}{$ds}{$filename}.sql.zip",
-		FTP_BINARY
+		"{$tmpFolder}{$ds}{$filename}.sql.zip"
 	);
 	
 	if (!$success) {
@@ -247,12 +260,12 @@ function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $ma
 		unlink("{$tmpFolder}{$ds}{$filename}.sql.zip");
 	}
 	
-	$files = ftp_nlist($con, "{$destinationFolder}{$ds}{$subfolder}");
+	$files = $con->nlist("{$destinationFolder}{$ds}{$subfolder}");
 	$old = findOldestFiles($files, "{$destinationFolder}{$ds}{$subfolder}{$ds}{$filename}");
 
 	if (count($files) > 2 * $max) {
 		foreach ($old as $el) {
-			$success = ftp_delete($con, $el);
+			$success = $con->delete($el);
 			
 			if (!$success) {
 				logError("The file {$el} was not removed.");

@@ -2,12 +2,21 @@
 	'options' => array(
 		'tmpFolder' => 'store/zip/here',
 		'logs' => 'path/to/logs',
+        'conn_type' => 'ftp' //ftp or sftp
+        'server' => array(
+            'host' => '123.456.789',
+            'destination' => 'path/to/storage/dir'
+        )
 		'ftp' => array(
-			'server' => '123.456.789',
 			'user' => 'user',
 			'password' => 'password'
-			'destination' => 'path/to/storage/dir'
-		)
+		),
+        'sftp' => array(
+            'user' => 'nicolas',
+            'password' => 'password',
+            'pubkey' => '/home/jorge/.ssh/id_rsa_bkp_server.pub',
+            'privkey' => '/home/jorge/.ssh/id_rsa_bkp_server'
+        )
 	),
 	'sites' => array(
 		'foldername' => array(
