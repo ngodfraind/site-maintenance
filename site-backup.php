@@ -122,7 +122,7 @@ function backupFiles($path, array $exclude, $name, $tmpFolder, $date)
 		$excludeCommand .= '-x';
 		
 		foreach ($exclude as $folder) {
-			$excludeCommand .= " {$rootDir}{$ds}{$folder}{$ds}*";
+			$excludeCommand .= " \"{$rootDir}{$ds}{$folder}/*\"";
 		}
 	}
 	
