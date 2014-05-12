@@ -57,6 +57,7 @@ function run($subfolder, $max)
 	$config    = include CONFIG_FILE;
 	$backups   = $config['sites'];
 	$tmpFolder = $config['options']['tmpFolder'];
+    $errors    = array();
 	
 	foreach ($backups as $name => $data) {
 		$date = date("m-d-y_H-i-s");
@@ -98,7 +99,7 @@ function run($subfolder, $max)
             throw new \Exception($contype . ' is not supported');
         }
         
-		store(
+		$error = store(
 			$tmpFolder,
             $contype,
             $ftpdata,
@@ -108,7 +109,13 @@ function run($subfolder, $max)
 			$subfolder,
 			$max
 		);
+        
+        if (!$error) {
+            $errors[] = "{$name} backup failed";
+        }
 	}
+    
+    return $errors;
 }
 
 //compress the files
@@ -183,6 +190,8 @@ function store($tmpFolder, $contype, $ftpdata, $name, $date, $destination, $subf
 	
 	if (false === $isConnected) {
 		logError("Unable to log in to the ftp server while uploading {$name}.");
+        
+        return false;
 	} else {
 		write('Saving data at the ftp server...');
 			
@@ -229,17 +238,17 @@ function store($tmpFolder, $contype, $ftpdata, $name, $date, $destination, $subf
 				
 				if (!$success) {
 					logError("The folder {$destinationFolder}{$ds}{$subfolder} was not created on the remote server."); 
+                    
+                    return false;
 				}
 			}
 		}
 		
-		upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $max);
+		$error = upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $max);
 		$con->close();
 	}
     
-    $msg = "ftp backup written in {$destination}{$ds}{$name}";
-    write($msg);
-    logSuccess($msg);
+    return true;
 }
 
 function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $max)
@@ -251,10 +260,12 @@ function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $ma
 		"{$tmpFolder}{$ds}{$filename}.zip"
 	);
 	
+    unlink("{$tmpFolder}{$ds}{$filename}.zip");
+    
 	if (!$success) {
 		logError("The file {$filename}.zip was not uploaded."); 
-	} else {
-		unlink("{$tmpFolder}{$ds}{$filename}.zip");
+        
+        return false;
 	}
 	
 	$success = $con->put(
@@ -262,11 +273,13 @@ function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $ma
 		"{$tmpFolder}{$ds}{$filename}.sql.zip"
 	);
 	
+    unlink("{$tmpFolder}{$ds}{$filename}.sql.zip");
+    
 	if (!$success) {
 		logError("The file {$filename}.sql.zip was not uploaded.");
-	} else {
-		unlink("{$tmpFolder}{$ds}{$filename}.sql.zip");
-	}
+        
+        return false;
+	} 
 	
 	$files = $con->nlist("{$destinationFolder}{$ds}{$subfolder}");
 	$old = findOldestFiles($files, "{$destinationFolder}{$ds}{$subfolder}{$ds}{$filename}");
@@ -280,6 +293,8 @@ function upload($con, $destinationFolder, $filename, $tmpFolder, $subfolder, $ma
 			}
 		}
 	}
+    
+    return true;
 }
 	
 //write in the console
@@ -356,4 +371,8 @@ $subFolder = $argv[1];
 $max = $argv[2];
 
 test($subFolder, $max);
-run($subFolder, $max);
+$errors = run($subFolder, $max);
+
+if (0 === count($errors)) {
+    logSuccess("The script was successfull !");
+}
