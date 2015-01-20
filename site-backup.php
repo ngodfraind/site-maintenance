@@ -352,7 +352,7 @@ function findOldestFiles($files, $basename)
 	$lowestDate = $datetime->getTimestamp();
 
 	foreach($dates as $date){
-		$datetime = date_create_from_format('m-d-y_H-i-s', $dates[0]);
+		$datetime = date_create_from_format('m-d-y_H-i-s', $date);
 		
 		if(strtotime($datetime->getTimestamp()) < $lowestDate){
 			$lowestDate = $datetime->getTimestamp();
