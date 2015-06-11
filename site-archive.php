@@ -162,3 +162,7 @@ function logError($log)
 	$logLine = date("m-d-y h:i:s") . ': ' . $log . PHP_EOL; 
 	file_put_contents($logFile, $logLine, FILE_APPEND);
 }
+
+$platform = $argv[1];
+test();
+$errors = run($platform);
