@@ -43,7 +43,7 @@ function run($platform)
 	$backups   = $config['sites'];
 	$tmpFolder = $config['options']['tmpFolder'];
 	
-	$data = $backups[$name]
+	$data = $backups[$name];
 	$date = date("m-d-y_H-i-s");
 		
 	backupFiles(
