@@ -49,7 +49,7 @@ function run($platform)
 	backupFiles(
 		$data['files']['path'], 
 		$data['files']['exclude'], 
-		$name,
+		$platform,
 		$tmpFolder,
 		$date
 	);
