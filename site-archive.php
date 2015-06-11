@@ -59,7 +59,7 @@ function run($platform)
 		$data['database']['password'],
 		$data['database']['name'],
 		$tmpFolder,
-		$name,
+		$platform,
 		$date
 	);
 }
